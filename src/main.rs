@@ -1,6 +1,5 @@
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
-    Ok(())
+fn main() {
+    println!("Run `cargo test`!");
 }
 
 #[cfg(test)]
@@ -19,6 +18,8 @@ mod test {
         for entry in std::fs::read_dir("schemas")? {
             let entry = entry?;
             let schema_name = entry.file_name().into_string().unwrap();
+
+            println!("Running test for schemas/{schema_name}");
 
             let schema_setup = formatdoc! {r#"
                 DROP SCHEMA IF EXISTS {schema_name} CASCADE;
