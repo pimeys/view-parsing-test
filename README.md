@@ -5,6 +5,20 @@ reads it back and expects it to match with the input statement.
 
 ## How to run
 
+Start the database:
+
+```bash
+> docker compose up -d
+```
+
+or
+
+```bash
+> podman-compose up -d
+```
+
+Then execute the tests:
+
 ```bash
 > cargo test
 ```

@@ -5,11 +5,11 @@ fn main() {
 #[cfg(test)]
 mod test {
     use expect_test::expect_file;
-    use indoc::{formatdoc, indoc};
+    use indoc::formatdoc;
     use quaint::{prelude::Queryable, single::Quaint};
     use sqlparser::{ast::Statement, dialect::PostgreSqlDialect, parser::Parser};
 
-    static PG_URL: &str = "postgresql://postgres:prisma@localhost:5438/postgres";
+    static PG_URL: &str = "postgresql://postgres:prisma@localhost:5432/postgres";
 
     #[tokio::test]
     async fn test_all() -> anyhow::Result<()> {
@@ -35,7 +35,7 @@ mod test {
             let setup = std::fs::read_to_string(entry.path().join("setup.sql"))?;
             quaint.raw_cmd(&setup).await?;
 
-            let views = get_views(&quaint).await?;
+            let views = get_views(&quaint, &schema_name).await?;
             let view = views.first().unwrap();
             let view_sql = view.parsed.to_string();
 
@@ -58,14 +58,14 @@ mod test {
         pub parsed: Statement,
     }
 
-    async fn get_views(conn: &Quaint) -> anyhow::Result<Vec<View>> {
-        let sql = indoc! {r#"
+    async fn get_views(conn: &Quaint, schema_name: &str) -> anyhow::Result<Vec<View>> {
+        let sql = formatdoc! {r#"
             SELECT viewname AS view_name, definition AS view_sql
             FROM pg_catalog.pg_views
-            WHERE schemaname = 'public'
+            WHERE schemaname = '{schema_name}'
         "#};
 
-        let res = conn.query_raw(sql, &[]).await?;
+        let res = conn.query_raw(&sql, &[]).await?;
 
         let views = res
             .into_iter()
